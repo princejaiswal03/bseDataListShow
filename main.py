@@ -28,12 +28,13 @@ class stockEntries(object):
         r = self.redisConnect()
         keys = r.keys('*')
         if keys:
-            keys.remove('dataSaveOn')
+            if 'dataSaveOn' in keys:
+                keys.remove('dataSaveOn')
             for item in keys:
                 retData.append(r.hgetall(item))
-
+        
         sortedData = sorted(retData, key = lambda pk:((float(pk['PREVCLOSE']) - float(pk['CLOSE']))/float(pk['LAST'])))
-
+        
         return sortedData[:10]
 
     #function to find value by name
@@ -62,6 +63,10 @@ config = { '/':
             { 
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': "static" 
-            } 
+            },
+	    'global':{
+	    	'server.socket_host': '172.31.22.42',
+	    	'server.socket_port': 8000,
+	    }
         }
 cherrypy.quickstart(stockEntries(),'/', config = config)
